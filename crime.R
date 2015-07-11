@@ -18,18 +18,33 @@ ggplot(data.frame(na.omit(arrestRaw)), aes(x = District)) +
         labs(title = "Arrests in Baltimore", x = "District", y = "Total") +
         stat_bin(geom = "text", aes(label = ..count.., vjust = -1))
 
-# Arrest Totals by year
+# Arrest Totals by Month
 arrestMonthFreq <- as.data.frame(table(arrestRaw$ArrestMonth))
 colnames(arrestMonthFreq) <- c("Date", "Total")
 arrestMonthFreq$Date <- as.character(arrestMonthFreq$Date)
 
-
 ggplot(arrestMonthFreq, aes(x = Date, y = Total)) +
-        geom_line(position = "identity", aes(group = 1))
+        geom_line(position = "identity", aes(group = 1)) +
+        labs(title = "Arrests in Baltimore (Jan 2013 - June 2015)", x = "Month", y = "Total Monthly Arrests") +
+        stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", aes(group = 1))
 
+# Arrest Totals by District by Month
 
+# Crime Data
+crimeRaw <- read.csv("BPD_Part_1_Victim_Based_Crime_Data.csv")
 
+# Clean the Crime Data
+crimeRaw$District[crimeRaw$District == ""] <- NA
+crimeRaw$CrimeDate <- as.Date(as.character(crimeRaw$CrimeDate), format = "%m/%d/%Y")
+crimeRaw$crimeMonth <- format(crimeRaw$CrimeDate, format = "%Y/%m")
 
+# Summary Histogram of Crime Type
+ggplot(data.frame(na.omit(crimeRaw)), aes(x = Description)) +
+        geom_histogram(fill = "#0066FF") +
+        labs(title = "Crime in Baltimore (Jan 2010 - June 2015)", x = "Crime", y = "Total") +
+        stat_bin(geom = "text", aes(label = ..count.., vjust = -1))
 
+# Homicides by month
+homicide <- as.data.frame(aggregate(crimeRaw ~ crimeRaw$Description + crimeRaw$CrimeDate))
 
 
