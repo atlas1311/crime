@@ -1,5 +1,6 @@
 #Dependencies
 library(ggplot2)
+library(plyr)
 
 # Read in data
 setwd("~/crime")
@@ -45,6 +46,6 @@ ggplot(data.frame(na.omit(crimeRaw)), aes(x = Description)) +
         stat_bin(geom = "text", aes(label = ..count.., vjust = -1))
 
 # Homicides by month
-homicide <- as.data.frame(aggregate(crimeRaw ~ crimeRaw$Description + crimeRaw$CrimeDate))
+homicide <- count(crimeRaw, c("CrimeDate", "Description"))
 
 
