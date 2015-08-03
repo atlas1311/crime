@@ -46,6 +46,6 @@ ggplot(data.frame(na.omit(crimeRaw)), aes(x = Description)) +
         stat_bin(geom = "text", aes(label = ..count.., vjust = -1))
 
 # Homicides by month
-homicide <- count(crimeRaw, c("CrimeDate", "Description"))
+homicide <- count(crimeRaw, c("CrimeDate", crimeRaw$Description == "HOMICIDE"))
 
 
