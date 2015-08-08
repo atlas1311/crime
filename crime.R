@@ -163,6 +163,21 @@ ggplot(data.frame(na.omit(crimeRaw)), aes(x = Description)) +
         stat_bin(geom = "text", aes(label = ..count.., vjust = -1))
 
 # Homicides by month
-homicide <- count(crimeRaw, c("CrimeDate", crimeRaw$Description == "HOMICIDE"))
+homicide <- count(crimeRaw, c("CrimeDate", "Description"))
+
+# Crime
+crimeRaw <- read.csv("BPD_Part_1_Victim_Based_Crime_Data.csv")
+
+# Clean Data
+crimeRaw$District <- as.factor(toupper(crimeRaw$District))
+crimeRaw$District[crimeRaw$District == ""] <- NA
+crimeRaw$CrimeDate <- as.character(crimeRaw$CrimeDate)
+crimeRaw$CrimeDate <- as.Date(crimeRaw$CrimeDate, format = "%m/%d/%Y")
+crimeRaw$CrimeMonth <- as.Date(crimeRaw$CrimeDate, format = "%Y/%m")
+
+
+
+
+
 
 
