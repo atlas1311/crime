@@ -4,6 +4,7 @@ library(plyr)
 library(gridExtra)
 
 # Read in data
+# https://www.baltimorepolice.org/bpd-open-data
 setwd("~/crime")
 arrestRaw <- read.csv("BPD_Arrests.csv")
 
@@ -17,7 +18,7 @@ arrestRaw$ArrestMonth <- format(arrestRaw$ArrestDate, format = "%Y/%m")
 # Summary Histogram of arrests by District
 crimeHist <- ggplot(data.frame(na.omit(arrestRaw)), aes(x = District)) +
         geom_histogram(fill = "#0066FF") +
-        labs(title = "Arrests in Baltimore", x = "District", y = "Total") +
+        labs(title = "Arrests in Baltimore: 1 JAN 13 - 15 AUG 2015", x = "District", y = "Total") +
         stat_bin(geom = "text", aes(label = ..count.., vjust = -1))
 crimeHist
 
@@ -28,7 +29,7 @@ arrestMonthFreq$Date <- as.character(arrestMonthFreq$Date)
 
 crimeMonth <- ggplot(arrestMonthFreq, aes(x = Date, y = Total)) +
         geom_line(position = "identity", aes(group = 1)) +
-        labs(title = "Arrests in Baltimore (Jan 2013 - June 2015)", x = "Month", y = "Total Monthly Arrests") +
+        labs(title = "Arrests in Baltimore (Jan 2013 - Aug 2015)", x = "Month", y = "Total Monthly Arrests") +
         stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", aes(group = 1))
 crimeMonth
 
@@ -50,6 +51,7 @@ westernFreq$Date <- as.character(westernFreq$Date)
 
 westernMonth <- ggplot(westernFreq, aes(x = Date, y = Total)) +
   geom_line(position = "identity", aes(group = 1)) +
+  scale_y_continuous(breaks = c(0, 50, 100, 150, 200, 250, 300, 350, 400)) +
   labs(title = "Arrests by Month in the Western", x = "Month", y = "Total Arrests") +
   stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", aes(group = 1))
 westernMonth
@@ -61,6 +63,7 @@ easternFreq$Date <- as.character(easternFreq$Date)
 
 easternMonth <- ggplot(easternFreq, aes(x = Date, y = Total)) +
   geom_line(position = "identity", aes(group = 1)) +
+  scale_y_continuous(breaks = c(0, 50, 100, 150, 200, 250, 300, 350, 400)) +
   labs(title = "Arrests by Month in the Eastern", x = "Month", y = "Total Arrests") +
   stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", aes(group = 1))
 easternMonth
@@ -73,7 +76,8 @@ centralFreq$Date <- as.character(centralFreq$Date)
 centralMonth <- ggplot(centralFreq, aes(x = Date, y = Total)) +
   geom_line(position = "identity", aes(group = 1)) +
   labs(title = "Arrests by Month in the Central", x = "Month", y = "Total Arrests") +
-  stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", aes(group = 1))
+  stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", aes(group = 1)) +
+  ylim(0, 400)
 centralMonth
 
 # Plot by district by month - Northeastern
@@ -83,6 +87,7 @@ northeasternFreq$Date <- as.character(northeasternFreq$Date)
 
 northeasternMonth <- ggplot(northeasternFreq, aes(x = Date, y = Total)) +
   geom_line(position = "identity", aes(group = 1)) +
+  scale_y_continuous(breaks = c(0, 50, 100, 150, 200, 250, 300, 350, 400)) +
   labs(title = "Arrests by Month in the Northeastern", x = "Month", y = "Total Arrests") +
   stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", aes(group = 1))
 northeasternMonth
@@ -94,8 +99,10 @@ northwesternFreq$Date <- as.character(northwesternFreq$Date)
 
 northwesternMonth <- ggplot(northwesternFreq, aes(x = Date, y = Total)) +
   geom_line(position = "identity", aes(group = 1)) +
+  scale_y_continuous(breaks = c(0, 50, 100, 150, 200, 250, 300, 350)) +
   labs(title = "Arrests by Month in the Northwestern", x = "Month", y = "Total Arrests") +
-  stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", aes(group = 1))
+  stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", aes(group = 1)) +
+  ylim(0, 350)
 northwesternMonth
 
 # Plot by district by month - Southeastern
@@ -105,6 +112,7 @@ southeasternFreq$Date <- as.character(southeasternFreq$Date)
 
 southeasternMonth <- ggplot(southeasternFreq, aes(x = Date, y = Total)) +
   geom_line(position = "identity", aes(group = 1)) +
+  scale_y_continuous(breaks = c(0, 50, 100, 150, 200, 250, 300, 350, 400)) +
   labs(title = "Arrests by Month in the Southeastern", x = "Month", y = "Total Arrests") +
   stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", aes(group = 1))
 southeasternMonth
@@ -116,8 +124,10 @@ southernFreq$Date <- as.character(southernFreq$Date)
 
 southernMonth <- ggplot(southernFreq, aes(x = Date, y = Total)) +
   geom_line(position = "identity", aes(group = 1)) +
+  scale_y_continuous(breaks = c(0, 50, 100, 150, 200, 250, 300, 350, 400)) +
   labs(title = "Arrests by Month in the Southern", x = "Month", y = "Total Arrests") +
-  stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", aes(group = 1))
+  stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", aes(group = 1)) +
+  ylim(0, 400)
 southernMonth
 
 # Plot by district by month - Southwesten
@@ -127,8 +137,10 @@ southwesternFreq$Date <- as.character(southwesternFreq$Date)
 
 southwesternMonth <- ggplot(southwesternFreq, aes(x = Date, y = Total)) +
   geom_line(position = "identity", aes(group = 1)) +
+  scale_y_continuous(breaks = c(0, 50, 100, 150, 200, 250, 300, 350, 400)) +
   labs(title = "Arrests by Month in the Southwestern", x = "Month", y = "Total Arrests") +
-  stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", aes(group = 1))
+  stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", aes(group = 1)) +
+  ylim(0, 300)
 southwesternMonth
 
 # Plot by district by month - Northern
@@ -139,7 +151,8 @@ northernFreq$Date <- as.character(northernFreq$Date)
 northernMonth <- ggplot(northernFreq, aes(x = Date, y = Total)) +
   geom_line(position = "identity", aes(group = 1)) +
   labs(title = "Arrests by Month in the Northern", x = "Month", y = "Total Arrests") +
-  stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", aes(group = 1))
+  stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", aes(group = 1)) +
+  ylim(0, 200)
 northernMonth
 
 
