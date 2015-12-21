@@ -33,8 +33,9 @@ arrestMonthFreq$Date <- as.character(arrestMonthFreq$Date)
 
 crimeMonth <- ggplot(arrestMonthFreq, aes(x = Date, y = Total)) +
         geom_line(position = "identity", aes(group = 1)) +
-        labs(title = "Arrests in Baltimore (Jan 2013 - Aug 2015)", x = "Month", y = "Total Monthly Arrests") +
-        stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", aes(group = 1))
+        labs(title = "Arrests in Baltimore (Jan 2013 - Dec 2015)", x = "Month", y = "Total Monthly Arrests") +
+        stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", aes(group = 1)) +
+        geom_vline(xintercept = 28)
 crimeMonth
 
 # Plot by district by month - Northern
