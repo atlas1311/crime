@@ -178,7 +178,7 @@ crimeRaw$CrimeMonth <- format(crimeRaw$CrimeDate, "%Y-%m")
 # Summary Histogram of Crime Type
 ggplot(data.frame(na.omit(crimeRaw)), aes(x = Description)) +
         geom_histogram(fill = "#0066FF") +
-        labs(title = "Crime in Baltimore (Jan 2010 - June 2015)", x = "Crime", y = "Total") +
+        labs(title = "Crime in Baltimore (Jan 2010 - Dec 2015)", x = "Crime", y = "Total") +
         stat_bin(geom = "text", aes(label = ..count.., vjust = -1))
 ## Might have to do something here to better detail how robberies are displayed. There are 4 different types
 ## of robberies...Might be smart to create a new variable that is a sum-total of all robberies committed,
@@ -189,7 +189,7 @@ ggplot(data.frame(na.omit(crimeRaw)), aes(x = Description)) +
 homicides <- na.omit(subset(crimeRaw, Description == "HOMICIDE"))
 homicideHist <- ggplot(data.frame(homicides), aes(x = District)) +
   geom_histogram(fill = "#0066FF") +
-  labs(title = "Homicides in Baltimore 1 JAN 13 - 22 AUG 15", x = "District", y = "Total") +
+  labs(title = "Homicides in Baltimore 1 JAN 13 - 20 DEC 15", x = "District", y = "Total") +
   stat_bin(geom = "text", aes(label = ..count.., vjust = -1))
 homicideHist
 
@@ -288,6 +288,18 @@ southwesternHomicidePlot
 
 ## grid.arrange for homicides
 
+## Homicides over time
+
+homicidesMonth <- as.data.frame(table(homicides$CrimeMonth))
+colnames(homicidesMonth) <- c("Month", "Homicides")
+homicidesDate <- as.data.frame(table(homicides$CrimeDate))
+
+h <- ggplot(homicidesMonth, aes(x = Month, y = Homicides)) +
+  geom_line(position = "identity", aes(group = 1)) +
+  labs(title = "Homicides in Baltimore (Jan 2013 - Dec 2015)", x = "Month", y = "Total Monthly Homicides") +
+  stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", aes(group = 1)) +
+  geom_vline(xintercept = 64)
+h
 
 
 
