@@ -297,6 +297,7 @@ homicidesDate <- as.data.frame(table(homicides$CrimeDate))
 h <- ggplot(homicidesMonth, aes(x = Month, y = Homicides)) +
   geom_line(position = "identity", aes(group = 1)) +
   labs(title = "Homicides in Baltimore (Jan 2013 - Dec 2015)", x = "Month", y = "Total Monthly Homicides") +
+  geom_text(label = "Freddie Gray \nDeath", x = 63, y = 42, size = 6, colour = "black") +
   stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", aes(group = 1)) +
   geom_vline(xintercept = 64)
 h
