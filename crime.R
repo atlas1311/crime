@@ -6,6 +6,34 @@ library(ggplot2)
 library(plyr)
 library(gridExtra)
 library(ggthemes)
+library(RColorBrewer)
+
+# Let's build a theme
+
+bsbTheme <- function() {
+          set1 <- brewer.pal("RdGy", n = 11)  
+          set2 <- brewer.pal("GnBu", n = 9)
+          background = set1[7]
+          ruler = set1[8]
+          axisText = set1[10]
+          axisTitle = set1[11]
+          plotTitle = set1[11]
+          
+          
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Read in data
 # https://www.baltimorepolice.org/bpd-open-data
@@ -34,6 +62,7 @@ arrestMonthFreq$Date <- as.character(arrestMonthFreq$Date)
 crimeMonth <- ggplot(arrestMonthFreq, aes(x = Date, y = Total)) +
         geom_line(position = "identity", aes(group = 1)) +
         labs(title = "Arrests in Baltimore (Jan 2013 - Dec 2015)", x = "Month", y = "Total Monthly Arrests") +
+        geom_text(label = "Freddie Gray \nDeath", x = 27, y = 4000, size = 6, colour = "black") +
         stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", aes(group = 1)) +
         geom_vline(xintercept = 28)
 crimeMonth
@@ -301,6 +330,7 @@ h <- ggplot(homicidesMonth, aes(x = Month, y = Homicides)) +
   stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", aes(group = 1)) +
   geom_vline(xintercept = 64)
 h
+
 
 
 
