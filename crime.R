@@ -1,16 +1,28 @@
 #Install
-install.packages(c("PerformanceAnalytics", "ggthemes"))
+install.packages(c("PerformanceAnalytics", "ggthemes", "rjson"))
 
 #Dependencies
 library(ggplot2)
 library(plyr)
 library(gridExtra)
 library(ggthemes)
+library(rjson)
+
 
 # Read in data
 # https://www.baltimorepolice.org/bpd-open-data
 setwd("~/crime")
 arrestRaw <- read.csv("BPD_Arrests.csv")
+
+# JSON API
+jsonArrest <- "http://data.baltimorecity.gov/resource/3i3v-ibrt.json"
+arrestRawJSON <- fromJSON(file = jsonArrest)
+arrestRawJSON <- lapply(arrestRawJSON, function(x) {
+  x[sapply(x, is.null)] <- NA
+  unlist(x)
+})
+dat <- do.call(rbind, lapply(arrestRawJSON, function(x) data.frame(arrestRawJSON)))
+
 
 # Clean Data
 arrestRaw$District <- as.factor(toupper(arrestRaw$District))
@@ -169,6 +181,11 @@ grid.arrange(southernMonth, northernMonth, ncol = 1)
 ##### Crime Data #####
 crimeRaw <- read.csv("BPD_Part_1_Victim_Based_Crime_Data.csv")
 
+# Experiment with accessing from JSON API?
+bpdURL <- "http://data.baltimorecity.gov/resource/wsfq-mvij.json"
+test <- as.data.frame(fromJSON(file = bpdURL))
+
+
 # Clean the Crime Data
 crimeRaw$District[crimeRaw$District == ""] <- NA
 crimeRaw$CrimeDate <- as.Date(as.character(crimeRaw$CrimeDate), format = "%m/%d/%Y")
@@ -287,8 +304,10 @@ southwesternHomicidePlot
 
 ## grid.arrange for homicides
 
-
-
+grid.arrange(northernHomicidePlot, southernHomicidePlot, easternHomicidePlot, westernHomicidePlot,
+             ncol = 2)
+grid.arrange(northeasternHomicidePlot, northwesternHomicidePlot, southeasternHomicidePlot,
+             southwesternHomicidePlot, ncol = 2)
 
 
 
