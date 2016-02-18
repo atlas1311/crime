@@ -1,12 +1,10 @@
-#Install
-install.packages(c("PerformanceAnalytics", "ggthemes", "rjson"))
-
 #Dependencies
 library(ggplot2)
 library(plyr)
 library(gridExtra)
 library(ggthemes)
 library(rjson)
+library(PerformanceAnalytics)
 
 
 # Read in data
@@ -21,7 +19,8 @@ arrestRawJSON <- lapply(arrestRawJSON, function(x) {
   x[sapply(x, is.null)] <- NA
   unlist(x)
 })
-dat <- do.call(rbind, lapply(arrestRawJSON, function(x) data.frame(arrestRawJSON)))
+dat <- do.call(rbind, lapply(arrestRawJSON, 
+                             function(x) as.data.frame(arrestRawJSON, stringsAsFactors = FALSE)))
 
 
 # Clean Data
