@@ -26,9 +26,9 @@ LAmap <- ggmap(LAbase, fullpage = TRUE)
 map1 <- ggmap(LAbase, extent = "panel") + 
         geom_density2d(data = crimeLA, aes(x = Long, y = Lat), size = 0.2) +
         stat_density2d(data = crimeLA, aes(x = Long, y = Lat, fill = ..level.., alpha = ..level..),
-        size = 2, n = 4, geom = "polygon") +
+        size = 0.2, n = 20, geom = "polygon") +
         scale_fill_gradient(low = "green", high = "red") +
-        scale_alpha(range = c(0, 1), guide = FALSE)
+        scale_alpha(range = c(0, 0.3), guide = FALSE)
 map1
 
 
