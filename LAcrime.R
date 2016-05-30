@@ -1,6 +1,6 @@
 # https://data.lacity.org/A-Safe-City/Crimes-2012-2015/s9rj-h3s6
 
-# Dependencies
+# Dependencies - can probably pare a few of these down.
 
 library(ggmap)
 library(data.table)
@@ -15,7 +15,7 @@ library(stats)
 # D. Kahle and H. Wickham. ggmap: Spatial Visualization with ggplot2. The R Journal, 5(1),
 # 144-161. URL http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf
 
-### Plot theme fore later ###
+### Plot theme for later ###
 bsbTheme <- function() {
   set1 = brewer.pal("PuBu", n = 9)
   set2 = brewer.pal("RdGy", n = 11)
@@ -77,10 +77,37 @@ violentChar <- c("ASSAULT WITH DEADLY WEAPON, AGGRAVATED ASSAULT", "RAPE, FORCIB
 violence <- subset(crimeLA, CrmCd.Desc %in% violentChar)
 violenceArrest <- subset(crimeLA, Status.Desc %in% c("Adult Arrest", "Juv Arrest"))
 
+# remove Dec 2015 outlier
+ptn = '^2015-12.*?'
+ndx = grep(ptn, crimeLA$MONTH, perl = T,invert = T)
+crimeLA2 = crimeLA[ndx, ]
+
+#select for only pre-ferguson data
+crimeLA3 <- crimeLA2[which(crimeLA2$MONTH!='2014-09' 
+            & crimeLA2$MONTH!='2014-10' 
+            & crimeLA2$MONTH!='2014-11' 
+            & crimeLA2$MONTH!='2014-12' 
+            & crimeLA2$MONTH!='2015-01' 
+            & crimeLA2$MONTH!='2015-02' 
+            & crimeLA2$MONTH!='2015-03' 
+            & crimeLA2$MONTH!='2015-04' 
+            & crimeLA2$MONTH!='2015-05' 
+            & crimeLA2$MONTH!='2015-06' 
+            & crimeLA2$MONTH!='2015-07' 
+            & crimeLA2$MONTH!='2015-08' 
+            & crimeLA2$MONTH!='2015-09' 
+            & crimeLA2$MONTH!='2015-10' 
+            & crimeLA2$MONTH!='2015-11'),]
+
 # Add totals for each month
-violentMonth <- as.data.frame(table(crimeLA$MONTH))
+violentMonth <- as.data.frame(table(crimeLA2$MONTH))
 colnames(violentMonth) <- c("Date", "Total")
 violentMonth$Date <- as.character(violentMonth$Date)
+
+# pre-Ferguson
+violentMonth2 <- as.data.frame(table(crimeLA3$MONTH))
+colnames(violentMonth2) <- c("Date", "Total")
+violentMonth2$Date <- as.character(violentMonth2$Date)
 
 # Summary plot for monthly totals
 crimeMonth <- ggplot(violentMonth, aes(x = Date, y = Total)) +
@@ -90,6 +117,14 @@ crimeMonth <- ggplot(violentMonth, aes(x = Date, y = Total)) +
               stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", 
               aes(group = 1))
 crimeMonth
+
+crimeMonth2 <- ggplot(violentMonth2, aes(x = Date, y = Total)) +
+               geom_line(position = "identity", aes(group = 1)) +
+               labs(title = "Violent Crime Reports in LA County (Jan 2012 - Dec 2015)", 
+               x = "Month", y = "Total Monthly Arrests") +
+               stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", 
+               aes(group = 1))
+crimeMonth2
 
 # Barplot of violent crime type
 violentHist <- ggplot(violence, aes(x = CrmCd.Desc)) +
@@ -132,7 +167,62 @@ map3 <- ggmap(LAbase, extent = "panel") +
 map3
 
 
-# Models
+# ARMA Models
+Total = violentMonth2[,"Total"]
+
+par(mfrow = c(2,2))
+plot(Total, type="l")
+
+acf(Total, lag.max=24)
+pacf(Total, lag.max=24)
+
+par(mfrow=c(1,1))
+
+model1a <- arima(Total, order=c(1,0,0)) # AR(1) 
+model1b <- arima(Total, order=c(0,0,1)) # MA(1) 
+model1c <- arima(Total, order=c(1,0,1)) # ARMA(1,1) 
+model1d <- arima(Total, order=c(2,0,0)) # AR(2)
+model1e <- arima(Total, order=c(0,0,2)) # MA(2)
+model1f <- arima(Total, order=c(2,0,1)) # ARMA(2,1)
+model1g <- arima(Total, order=c(1,0,2)) # ARMA(1,2)
+model1h <- arima(Total, order=c(2,0,2)) # ARMA(2,2)
+
+summary(model1a)
+summary(model1d)
+summary(model1h)
+
+# Forecast error evaluation with Root Mean Square Error (RMSE): 
+accuracy(model1a)
+accuracy(model1b)
+accuracy(model1c)
+accuracy(model1d)
+accuracy(model1e)
+accuracy(model1f)   
+accuracy(model1g)
+accuracy(model1h)
+
+for1h <- forecast(model1h,15)  # forecast the next 24 periods
+for1h
+crimeMonth
+plot(for1h)
+abline(h = 0)
+grid()
+
+#ARIMA Model
+auto.arima(Total)
+model2 <- arima(Total, order = c(0,1,0))
+for2 <- forecast(model2,15)
+
+par(mfrow=c(3,3))
+plot(for2)
+par(mfrow=c(1,1))
+
+
+
+
+
+
+
 
 violentACF <- as.numeric(violentMonth[, "Total"])
 acf(violentACF)
