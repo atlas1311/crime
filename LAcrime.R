@@ -11,7 +11,8 @@ library(forecast)
 library(quantmod)
 library(tseries)
 library(stats)
-
+library(dynlm)
+library(vars)
 # D. Kahle and H. Wickham. ggmap: Spatial Visualization with ggplot2. The R Journal, 5(1),
 # 144-161. URL http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf
 
@@ -75,7 +76,10 @@ violentChar <- c("ASSAULT WITH DEADLY WEAPON, AGGRAVATED ASSAULT", "RAPE, FORCIB
                 "LYNCHING", "LYNCHING - ATTEMPTED", "HOMICIDE (NON-UCR)")
 
 violence <- subset(crimeLA, CrmCd.Desc %in% violentChar)
-violenceArrest <- subset(crimeLA, Status.Desc %in% c("Adult Arrest", "Juv Arrest"))
+violenceReport <- subset(violence, Status.Desc != "Adult Arrest" & Status.Desc != "Juv Arrest")
+violenceArrest <- subset(violence, Status.Desc %in% c("Adult Arrest", "Juv Arrest"))
+robbery <- subset(crimeLA, CrmCd.Desc %in% c("BURGLARY", "ROBBERY"))
+rapeCrime <-subset(crimeLA, CrmCd.Desc %in% c("RAPE, FORCIBLE", "RAPE"))
 
 # remove Dec 2015 outlier
 ptn = '^2015-12.*?'
@@ -109,6 +113,7 @@ violentMonth2 <- as.data.frame(table(crimeLA3$MONTH))
 colnames(violentMonth2) <- c("Date", "Total")
 violentMonth2$Date <- as.character(violentMonth2$Date)
 
+
 # Summary plot for monthly totals
 crimeMonth <- ggplot(violentMonth, aes(x = Date, y = Total)) +
               geom_line(position = "identity", aes(group = 1)) +
@@ -118,6 +123,7 @@ crimeMonth <- ggplot(violentMonth, aes(x = Date, y = Total)) +
               aes(group = 1))
 crimeMonth
 
+# pre-Ferguson plot
 crimeMonth2 <- ggplot(violentMonth2, aes(x = Date, y = Total)) +
                geom_line(position = "identity", aes(group = 1)) +
                labs(title = "Violent Crime Reports in LA County (Jan 2012 - Dec 2015)", 
@@ -139,32 +145,55 @@ LAbase <- get_map(location = c(-118.3308, 33.9931), zoom = "auto", maptype = "ro
 LAmap <- ggmap(LAbase, fullpage = TRUE)
 
 # Map conture plots
-
+# Total LA crime "incidents"
 map1 <- ggmap(LAbase, extent = "panel") + 
-        geom_density2d(data = crimeLA, aes(x = Long, y = Lat), size = 0.2) +
+        geom_density2d(data = crimeLA, aes(x = Long, y = Lat), size = 0.3) +
         stat_density2d(data = crimeLA, aes(x = Long, y = Lat, fill = ..level.., alpha = ..level..),
-        size = 0.2, n = 20, geom = "polygon") +
+        size = 0.01, n = 50, geom = "polygon") +
         scale_fill_gradient(low = "green", high = "red") +
-        scale_alpha(range = c(0, 0.3), guide = FALSE)
+        scale_alpha(range = c(0, 0.25), guide = FALSE) +
+        labs(title = "Total LA Crime 'Incidents'", x = "Longitude", y = "Latitude") 
 map1
 
-
+# Violent incidents reported in LA County
 map2 <- ggmap(LAbase, extent = "panel") + 
-        geom_density2d(data = violence, aes(x = Long, y = Lat), size = 0.2) +
-        stat_density2d(data = violence, aes(x = Long, y = Lat, fill = ..level.., 
-        alpha = ..level..), size = 0.2, n = 20, geom = "polygon") +
+        geom_density2d(data = violenceReport, aes(x = Long, y = Lat), size = 0.3) +
+        stat_density2d(data = violenceReport, aes(x = Long, y = Lat, fill = ..level.., 
+        alpha = ..level..), size = 0.01, n = 100, geom = "polygon") +
         scale_fill_gradient(low = "green", high = "red") +
-        scale_alpha(range = c(0, 0.3), guide = FALSE)
+        scale_alpha(range = c(0, 0.25), guide = FALSE) +
+        labs(title = "Total LA Violent Crime Reports", x = "Longitude", y = "Latitude")
 map2
 
-
+# Violent incidents where there was an arrest made in LA County
 map3 <- ggmap(LAbase, extent = "panel") +
-        geom_density2d(data = violenceArrest, aes(x = Long, y = Lat), size = 0.2) +
+        geom_density2d(data = violenceArrest, aes(x = Long, y = Lat), size = 0.3) +
         stat_density2d(data = violenceArrest, aes(x = Long, y = Lat, fill = ..level..,
-        alpha = ..level..), size = 0.2, n = 20, geom = "polygon") +
+        alpha = ..level..), size = 0.01, n = 100, geom = "polygon") +
         scale_fill_gradient(low = "green", high = "red") +
-        scale_alpha(range = c(0, 0.3), guide = FALSE)
+        scale_alpha(range = c(0.00, 0.25), guide = FALSE) +
+        labs(title = "Total LA Violent Crime Arrests", x = "Longitude", y = "Latitude")
 map3
+
+# Robberies in LA
+map4 <- ggmap(LAbase, extent = "panel") +
+        geom_density2d(data = robbery, aes(x = Long, y = Lat), size = 0.3) +
+        stat_density2d(data = robbery, aes(x = Long, y = Lat, fill = ..level..,
+        alpha = ..level..), size = 0.01, n = 100, geom = "polygon") +
+        scale_fill_gradient(low = "green", high = "red") +
+        scale_alpha(range = c(0.00, 0.25), guide = FALSE) +
+        labs(title = "Total LA Robberies", x = "Longitude", y = "Latitude")
+map4
+
+# Rape in LA
+map5 <- ggmap(LAbase, extent = "panel") +
+        geom_density2d(data = rapeCrime, aes(x = Long, y = Lat), size = 0.3) +
+        stat_density2d(data = rapeCrime, aes(x = Long, y = Lat, fill = ..level..,
+        alpha = ..level..), size = 0.01, n = 100, geom = "polygon") +
+        scale_fill_gradient(low = "green", high = "red") +
+        scale_alpha(range = c(0.00, 0.25), guide = FALSE) +
+        labs(title = "Total LA Rape Crimes", x = "Longitude", y = "Latitude")
+map5
 
 
 # ARMA Models
@@ -208,6 +237,31 @@ plot(for1h)
 abline(h = 0)
 grid()
 
+
+
+
+
+for1hPlot <- ggplot(violentMonth, aes(x = Date, y = Total)) +
+             geom_line(position = "identity", aes(group = 1)) +
+             geom_line(position = "identity", aes(group = 1)) +
+
+for1hPlot
+
+arrestTS <- ts(reportMonthlyTotal, frequency = 12, start = c(2012,1))
+
+forPlot <- funggcast(arrestTS,for1h)
+
+library(forecast)
+library(zoo)
+library(ggplot2)
+
+ggplot(violentMonth, aes(x = Date, y = Total)) +
+  geom_line(position = "identity", aes(group = 1)) +
+  labs(title = "Violent Crime Reports in LA County (Jan 2012 - Dec 2015)", 
+       x = "Month", y = "Total Monthly Arrests") +
+  stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", 
+              aes(group = 1))
+
 #ARIMA Model
 auto.arima(Total)
 model2 <- arima(Total, order = c(0,1,0))
@@ -216,6 +270,41 @@ for2 <- forecast(model2,15)
 par(mfrow=c(3,3))
 plot(for2)
 par(mfrow=c(1,1))
+
+# Dynamic Linear Model
+
+reportMonth <- as.data.frame(table(violenceReport$MONTH))
+colnames(reportMonth) <- c("Date", "Total")
+reportMonth$Date <- as.character(reportMonth$Date)
+
+arrestMonth <- as.data.frame(table(violenceArrest$MONTH))
+colnames(arrestMonth) <- c("Date", "Total")
+arrestMonth$Date <- as.character(arrestMonth$Date)
+
+
+reportMonthlyTotal <- reportMonth[,"Total"]
+reportTS <- ts(reportMonthlyTotal, frequency = 12, start = c(2012,1))
+plot(reportTS)
+
+rLag <- lag(reportTS, k = -1)
+
+arrestMonthlyTotal <- arrestMonth[,"Total"]
+arrestTS <- ts(reportMonthlyTotal, frequency = 12, start = c(2012,1))
+plot(arrestTS)
+
+vLag <- lag(arrestTS, k = -1)
+
+model3 <- dynlm(reportTS ~ vLag + rLag)
+summary(model3)
+plot(residuals(model3))
+
+forecast(model3)
+
+
+### Forward looking forcast
+model4 <- VAR(, p = 12, type = "const")
+for4 <- predict(model4, n.ahead = 24, ci = 0.95)
+
 
 
 
