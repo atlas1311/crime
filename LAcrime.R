@@ -1,9 +1,9 @@
 # https://data.lacity.org/A-Safe-City/Crimes-2012-2015/s9rj-h3s6
 
 # Dependencies - can probably pare a few of these down.
- dependent <- c("ggmap", "data.table", "reshape2", "ggplot2", "dplyr", "forecast", "quantmod",
-                "tseries", "stats", "dynlm", "vars")
- lapply(dependent, library, character.only = TRUE)
+dependent <- c("ggmap", "data.table", "reshape2", "ggplot2", "dplyr", "forecast", "quantmod",
+              "tseries", "stats", "dynlm", "vars")
+lapply(dependent, library, character.only = TRUE)
 
 library(ggmap)
 library(data.table)
@@ -16,6 +16,8 @@ library(tseries)
 library(stats)
 library(dynlm)
 library(vars)
+library(RColorBrewer)
+
 # D. Kahle and H. Wickham. ggmap: Spatial Visualization with ggplot2. The R Journal, 5(1),
 # 144-161. URL http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf
 
@@ -60,17 +62,21 @@ bsbTheme <- function() {
 
 setwd("~/crime")
 
-# Load and clean the data
+# Load and clean the data. Add lat/long variables for location data.
 crimeRaw <- read.csv(file = "Crimes_2012-2015.csv", header = TRUE, sep = ",")
 crimeLA <- data.frame(crimeRaw, colsplit(crimeRaw$Location.1, pattern = "\\,", names = c("Lat", "Long")))
 crimeLA$Lat <- as.numeric(sub(pattern = "\\(", replacement = "", x = crimeLA$Lat))
 crimeLA$Long <- as.numeric(sub(pattern = "\\)", replacement = "", x = crimeLA$Long))
 str(crimeLA)
 
-## Add month vector
+## Add month vector for reports and occurances
 crimeLA$Date.Rptd <- as.character(crimeLA$Date.Rptd)
 crimeLA$Date.Rptd <- as.Date(crimeLA$Date.Rptd, format = "%m/%d/%Y")
-crimeLA$MONTH <- format(crimeLA$Date.Rptd, "%Y-%m")
+crimeLA$ReportMonth <- format(crimeLA$Date.Rptd, "%Y-%m")
+
+crimeLA$DATE.OCC <- as.character(crimeLA$DATE.OCC)
+crimeLA$DATE.OCC <- as.Date(crimeLA$DATE.OCC, format = "%m/%d/%Y")
+crimeLA$CrimeMonth <- format(crimeLA$DATE.OCC, "%Y-%m")
 
 # Select on violent crime
 violentChar <- c("ASSAULT WITH DEADLY WEAPON, AGGRAVATED ASSAULT", "RAPE, FORCIBLE",
@@ -79,15 +85,21 @@ violentChar <- c("ASSAULT WITH DEADLY WEAPON, AGGRAVATED ASSAULT", "RAPE, FORCIB
                 "LYNCHING", "LYNCHING - ATTEMPTED", "HOMICIDE (NON-UCR)")
 
 violence <- subset(crimeLA, CrmCd.Desc %in% violentChar)
+# Report that did not, as of data release, result in an arrest
 violenceReport <- subset(violence, Status.Desc != "Adult Arrest" & Status.Desc != "Juv Arrest")
+# Report that did, according to the data, result in an arrest
 violenceArrest <- subset(violence, Status.Desc %in% c("Adult Arrest", "Juv Arrest"))
+# Specialty classes
 robbery <- subset(crimeLA, CrmCd.Desc %in% c("BURGLARY", "ROBBERY"))
 rapeCrime <-subset(crimeLA, CrmCd.Desc %in% c("RAPE, FORCIBLE", "RAPE"))
 
 # remove Dec 2015 outlier
+# Dec 2015 data only goes to 2015-12-03
 ptn = '^2015-12.*?'
 ndx = grep(ptn, crimeLA$MONTH, perl = T,invert = T)
 crimeLA2 = crimeLA[ndx, ]
+
+dec <- crimeLA[crimeLA$MONTH == '2015-12', ]
 
 #select for only pre-ferguson data
 crimeLA3 <- crimeLA2[which(crimeLA2$MONTH!='2014-09' 
@@ -106,13 +118,13 @@ crimeLA3 <- crimeLA2[which(crimeLA2$MONTH!='2014-09'
             & crimeLA2$MONTH!='2015-10' 
             & crimeLA2$MONTH!='2015-11'),]
 
-# Add totals for each month
-violentMonth <- as.data.frame(table(crimeLA2$MONTH))
+# Crime reports per month
+violentMonth <- as.data.frame(table(crimeLA2$Date.Rptd))
 colnames(violentMonth) <- c("Date", "Total")
 violentMonth$Date <- as.character(violentMonth$Date)
 
 # pre-Ferguson
-violentMonth2 <- as.data.frame(table(crimeLA3$MONTH))
+violentMonth2 <- as.data.frame(table(crimeLA3$Date.Rptd))
 colnames(violentMonth2) <- c("Date", "Total")
 violentMonth2$Date <- as.character(violentMonth2$Date)
 
@@ -123,8 +135,10 @@ crimeMonth <- ggplot(violentMonth, aes(x = Date, y = Total)) +
               labs(title = "Violent Crime Reports in LA County (Jan 2012 - Dec 2015)", 
               x = "Month", y = "Total Monthly Arrests") +
               stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", 
-              aes(group = 1))
+              aes(group = 1)) +
+              bsbTheme()
 crimeMonth
+# Need to fix x-axis scale. Change trendline color. Add "," on y-axis. 
 
 # pre-Ferguson plot
 crimeMonth2 <- ggplot(violentMonth2, aes(x = Date, y = Total)) +
