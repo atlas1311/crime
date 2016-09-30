@@ -1,6 +1,9 @@
 # https://data.lacity.org/A-Safe-City/Crimes-2012-2015/s9rj-h3s6
 
 # Dependencies - can probably pare a few of these down.
+ dependent <- c("ggmap", "data.table", "reshape2", "ggplot2", "dplyr", "forecast", "quantmod",
+                "tseries", "stats", "dynlm", "vars")
+ lapply(dependent, library, character.only = TRUE)
 
 library(ggmap)
 library(data.table)
