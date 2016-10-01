@@ -78,6 +78,12 @@ crimeLA$DATE.OCC <- as.character(crimeLA$DATE.OCC)
 crimeLA$DATE.OCC <- as.Date(crimeLA$DATE.OCC, format = "%m/%d/%Y")
 crimeLA$CrimeMonth <- format(crimeLA$DATE.OCC, "%Y-%m")
 
+## Add year vector for reports and occurances. Need this for making the .gif plot easier.
+# Maybe there's a different way to subset?
+
+crimeLA$ReportYear <- format(crimeLA$Date.Rptd, "%Y")
+crimeLA$CrimeYear <- format(crimeLA$DATE.OCC, "%Y")
+
 # Select on violent crime
 violentChar <- c("ASSAULT WITH DEADLY WEAPON, AGGRAVATED ASSAULT", "RAPE, FORCIBLE",
                 "RAPE, ATTEMPTED", "BATTERY WITH SEXUAL CONTACT", 
@@ -93,38 +99,44 @@ violenceArrest <- subset(violence, Status.Desc %in% c("Adult Arrest", "Juv Arres
 robbery <- subset(crimeLA, CrmCd.Desc %in% c("BURGLARY", "ROBBERY"))
 rapeCrime <-subset(crimeLA, CrmCd.Desc %in% c("RAPE, FORCIBLE", "RAPE"))
 
-# remove Dec 2015 outlier
+# remove Dec 2015 outlier for reports
 # Dec 2015 data only goes to 2015-12-03
-ptn = '^2015-12.*?'
-ndx = grep(ptn, crimeLA$MONTH, perl = T,invert = T)
-crimeLA2 = crimeLA[ndx, ]
+ptn <- '^2015-12.*?'
+ndx <- grep(ptn, crimeLA$ReportMonth, perl = TRUE, invert = TRUE)
+crimeLA2 <- crimeLA[ndx, ]
 
-dec <- crimeLA[crimeLA$MONTH == '2015-12', ]
 
-#select for only pre-ferguson data
-crimeLA3 <- crimeLA2[which(crimeLA2$MONTH!='2014-09' 
-            & crimeLA2$MONTH!='2014-10' 
-            & crimeLA2$MONTH!='2014-11' 
-            & crimeLA2$MONTH!='2014-12' 
-            & crimeLA2$MONTH!='2015-01' 
-            & crimeLA2$MONTH!='2015-02' 
-            & crimeLA2$MONTH!='2015-03' 
-            & crimeLA2$MONTH!='2015-04' 
-            & crimeLA2$MONTH!='2015-05' 
-            & crimeLA2$MONTH!='2015-06' 
-            & crimeLA2$MONTH!='2015-07' 
-            & crimeLA2$MONTH!='2015-08' 
-            & crimeLA2$MONTH!='2015-09' 
-            & crimeLA2$MONTH!='2015-10' 
-            & crimeLA2$MONTH!='2015-11'),]
+#select for only pre-ferguson report data
+crimeLA3 <- crimeLA2[which(crimeLA2$ReportMonth!='2014-09' 
+            & crimeLA2$ReportMonth!='2014-10' 
+            & crimeLA2$ReportMonth!='2014-11' 
+            & crimeLA2$ReportMonth!='2014-12' 
+            & crimeLA2$ReportMonth!='2015-01' 
+            & crimeLA2$ReportMonth!='2015-02' 
+            & crimeLA2$ReportMonth!='2015-03' 
+            & crimeLA2$ReportMonth!='2015-04' 
+            & crimeLA2$ReportMonth!='2015-05' 
+            & crimeLA2$ReportMonth!='2015-06' 
+            & crimeLA2$ReportMonth!='2015-07' 
+            & crimeLA2$ReportMonth!='2015-08' 
+            & crimeLA2$ReportMonth!='2015-09' 
+            & crimeLA2$ReportMonth!='2015-10' 
+            & crimeLA2$ReportMonth!='2015-11'),]
 
 # Crime reports per month
-violentMonth <- as.data.frame(table(crimeLA2$Date.Rptd))
+violentMonth <- data.frame(table(crimeLA2$ReportMonth))
 colnames(violentMonth) <- c("Date", "Total")
 violentMonth$Date <- as.character(violentMonth$Date)
+violentMonth$Date <- as.Date(violentMonth$Date, format = "%Y-%m")
+head(violentMonth)
 
-# pre-Ferguson
-violentMonth2 <- as.data.frame(table(crimeLA3$Date.Rptd))
+testDate <- factor("2012-01")
+testDate2 <- c("2012-01")
+as.Date(testDate, format = "%Y-%m")
+as.Date(testDate2, format = "%Y-%m")
+
+# pre-Ferguson reports per month
+violentMonth2 <- as.data.frame(table(crimeLA3$ReportMonth))
 colnames(violentMonth2) <- c("Date", "Total")
 violentMonth2$Date <- as.character(violentMonth2$Date)
 
@@ -133,27 +145,34 @@ violentMonth2$Date <- as.character(violentMonth2$Date)
 crimeMonth <- ggplot(violentMonth, aes(x = Date, y = Total)) +
               geom_line(position = "identity", aes(group = 1)) +
               labs(title = "Violent Crime Reports in LA County (Jan 2012 - Dec 2015)", 
-              x = "Month", y = "Total Monthly Arrests") +
+              x = "Month", y = "Total Monthly Reports") +
               stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", 
               aes(group = 1)) +
+              scale_x_date(date_labels = "%b %d") +
               bsbTheme()
-crimeMonth
 # Need to fix x-axis scale. Change trendline color. Add "," on y-axis. 
+crimeMonth
 
 # pre-Ferguson plot
 crimeMonth2 <- ggplot(violentMonth2, aes(x = Date, y = Total)) +
                geom_line(position = "identity", aes(group = 1)) +
                labs(title = "Violent Crime Reports in LA County (Jan 2012 - Dec 2015)", 
-               x = "Month", y = "Total Monthly Arrests") +
+               x = "Month", y = "Total Monthly Reports") +
                stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", 
-               aes(group = 1))
+               aes(group = 1)) +
+               bsbTheme()
+# Need to fix x-axis scale. Change trendling color. Add "," on y-axis.
 crimeMonth2
+
 
 # Barplot of violent crime type
 violentHist <- ggplot(violence, aes(x = CrmCd.Desc)) +
                geom_bar() +
                scale_y_continuous(breaks = seq(0, 40000, 5000)) +
-               labs(title = "Violence Crime in LA Jan 2012 - Dec 2015", x = "Type", y = "Total")
+               labs(title = "Violence Crime in LA Jan 2012 - Dec 2015", x = "Type", y = "Total") +
+               bsbTheme()
+# Need to fix x-axis scale. Add "," on y-axis. Need to think about changing the y-axis scale
+# Reorder barplots. Maybe color-code and include plot key?
 violentHist
 
 # Load the base map
@@ -162,7 +181,7 @@ LAbase <- get_map(location = c(-118.3308, 33.9931), zoom = "auto", maptype = "ro
 LAmap <- ggmap(LAbase, fullpage = TRUE)
 
 # Map conture plots
-# Total LA crime "incidents"
+# Total LA crime "incidents" 2012-2015
 map1 <- ggmap(LAbase, extent = "panel") + 
         geom_density2d(data = crimeLA, aes(x = Long, y = Lat), size = 0.3) +
         stat_density2d(data = crimeLA, aes(x = Long, y = Lat, fill = ..level.., alpha = ..level..),
@@ -172,7 +191,7 @@ map1 <- ggmap(LAbase, extent = "panel") +
         labs(title = "Total LA Crime 'Incidents'", x = "Longitude", y = "Latitude") 
 map1
 
-# Violent incidents reported in LA County
+# Violent incidents reported in LA County 2012-2015
 map2 <- ggmap(LAbase, extent = "panel") + 
         geom_density2d(data = violenceReport, aes(x = Long, y = Lat), size = 0.3) +
         stat_density2d(data = violenceReport, aes(x = Long, y = Lat, fill = ..level.., 
@@ -182,7 +201,7 @@ map2 <- ggmap(LAbase, extent = "panel") +
         labs(title = "Total LA Violent Crime Reports", x = "Longitude", y = "Latitude")
 map2
 
-# Violent incidents where there was an arrest made in LA County
+# Violent incidents where there was an arrest made in LA County 2012-2015
 map3 <- ggmap(LAbase, extent = "panel") +
         geom_density2d(data = violenceArrest, aes(x = Long, y = Lat), size = 0.3) +
         stat_density2d(data = violenceArrest, aes(x = Long, y = Lat, fill = ..level..,
@@ -191,6 +210,14 @@ map3 <- ggmap(LAbase, extent = "panel") +
         scale_alpha(range = c(0.00, 0.25), guide = FALSE) +
         labs(title = "Total LA Violent Crime Arrests", x = "Longitude", y = "Latitude")
 map3
+
+# Need to think about making a GIF with the change in crime density across years
+
+
+
+
+
+
 
 # Robberies in LA
 map4 <- ggmap(LAbase, extent = "panel") +
@@ -211,6 +238,9 @@ map5 <- ggmap(LAbase, extent = "panel") +
         scale_alpha(range = c(0.00, 0.25), guide = FALSE) +
         labs(title = "Total LA Rape Crimes", x = "Longitude", y = "Latitude")
 map5
+
+
+
 
 
 # ARMA Models
@@ -290,11 +320,11 @@ par(mfrow=c(1,1))
 
 # Dynamic Linear Model
 
-reportMonth <- as.data.frame(table(violenceReport$MONTH))
+reportMonth <- as.data.frame(table(violenceReport$ReportMonth))
 colnames(reportMonth) <- c("Date", "Total")
 reportMonth$Date <- as.character(reportMonth$Date)
 
-arrestMonth <- as.data.frame(table(violenceArrest$MONTH))
+arrestMonth <- as.data.frame(table(violenceArrest$ReportMonth))
 colnames(arrestMonth) <- c("Date", "Total")
 arrestMonth$Date <- as.character(arrestMonth$Date)
 
