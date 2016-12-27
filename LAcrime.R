@@ -126,6 +126,10 @@ crimeLA3 <- crimeLA2[which(crimeLA2$ReportMonth!='2014-09'
 # Crime reports per month
 violentMonth <- data.frame(table(crimeLA2$ReportMonth))
 colnames(violentMonth) <- c("Date", "Total")
+class(violentMonth)
+class(violentMonth$Date)
+df <- data.frame(Date = c("2015-10", "2015-09", "2015-08"))
+as.Date(df$Date, format = "%Y-%")
 violentMonth$Date <- as.character(violentMonth$Date)
 violentMonth$Date <- as.Date(violentMonth$Date, format = "%Y-%m")
 head(violentMonth)
@@ -211,7 +215,7 @@ map3 <- ggmap(LAbase, extent = "panel") +
         labs(title = "Total LA Violent Crime Arrests", x = "Longitude", y = "Latitude")
 map3
 
-# Need to think about making a GIF with the change in crime density across years
+# Need to think about making a GIF with the change in crime density across years, or even months
 
 
 
