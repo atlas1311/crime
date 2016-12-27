@@ -106,23 +106,46 @@ propertyCrimeMonth
 
 # Start making some heat maps
 # Create base map for Boston
-BostonBase <- get_map(location = c(-71.057083, 42.361145), zoom = "auto", maptype = "roadmap", 
+BostonBase <- get_map(location = c(-71.057083, 42.361145), zoom = 12, maptype = "roadmap", 
                   source = "google")
 BostonMap <- ggmap(BostonBase, fullpage = TRUE)
 
 # violent crime maps
 map1 <- ggmap(BostonBase, extent = "panel") + 
-  geom_density2d(data = violentCrime, aes(x = Long, y = Lat), size = 0.3) +
-  stat_density2d(data = violentCrime, aes(x = Long, y = Lat, fill = ..level.., alpha = ..level..),
-                 size = 0.01, n = 50, geom = "polygon") +
-  scale_fill_gradient(low = "green", high = "red") +
-  scale_alpha(range = c(0, 0.25), guide = FALSE) +
-  labs(title = "Violent Crime in Boston 2012-2015", x = "Longitude", y = "Latitude") 
+        geom_density2d(data = violence, aes(x = Long, y = Lat), size = 0.3) +
+        stat_density2d(data = violence, aes(x = Long, y = Lat, fill = ..level.., alpha = ..level..),
+              size = 0.01, n = 50, geom = "polygon") +
+        scale_fill_gradient(low = "green", high = "red") +
+        scale_alpha(range = c(0, 0.25), guide = FALSE) +
+        labs(title = "Violent Crime in Boston 2012-2015", x = "Longitude", y = "Latitude") 
 map1
 
-# Apparently the new package as broken
-# Reverting to prior version
-library(devtools)
-install_version("ggplot2", version = "2.1.0", repos = "http://cran.us.r-project.org")
-devtools::install_github('hadley/ggplot2', force = TRUE)
-devtools::install_github("dkahle/ggmap")
+# Sex crime maps
+map2 <- ggmap(BostonBase, extent = "panel") +
+        geom_density2d(data = sex, aes(x = Long, y = Lat), size = 0.3) +
+        stat_density_2d(data = sex, aes(x = Long, y = Lat, fill = ..level.., alpha = ..level..),
+              size = 0.01, n = 50, geom = "polygon") +
+        scale_fill_gradient(low = "green", high = "red") +
+        scale_alpha(range = c(0, 0.25), guide = FALSE) +
+        labs(title = "Sex Crimes in Boston 2012-2015", x = "Longitude", y = "Latitude")
+map2
+
+# Property crime maps
+map3 <- ggmap(BostonBase, extent = "panel") +
+        geom_density2d(data = sex, aes(x = Long, y = Lat), size = 0.3) +
+        stat_density_2d(data = sex, aes(x = Long, y = Lat, fill = ..level.., alpha = ..level..),
+              size = 0.01, n = 50, geom = "polygon") +
+        scale_fill_gradient(low = "green", high = "red") +
+        scale_alpha(range = c(0, 0.25), guide = FALSE) +
+        labs(title = "Property Crimes in Boston 2012-2015", x = "Longitude",  y = "Latitude")
+map3
+
+
+
+
+
+
+
+
+
+
