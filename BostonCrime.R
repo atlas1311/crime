@@ -31,6 +31,7 @@ crimeBoston$DATE <- as.Date(crimeBoston$FROMDATE, format = "%m/%d/%Y %I:%M:%S %p
 crimeBoston$MONTH <- as.Date(cut(crimeBoston$DATE, breaks = "month"))
 crimeBoston$WEEK <- as.Date(cut(crimeBoston$DATE, breaks = "week", start.on.monday = FALSE))
 crimeBoston$DAY <- as.Date(cut(crimeBoston$DATE, breaks = "day"))
+crimeBoston$HOUR <- as.Date(cut(crimeBoston$DATE, breaks = "hour"))
 
 
 # Explore crime types
@@ -38,14 +39,16 @@ unique(crimeBoston$INCIDENT_TYPE_DESCRIPTION)
 barplot(prop.table(table(crimeBoston$INCIDENT_TYPE_DESCRIPTION)))
 table(crimeBoston$INCIDENT_TYPE_DESCRIPTION)
 
+# Fix repeat variables
+crimeBoston$INCIDENT_TYPE_DESCRIPTION <- toupper(crimeBoston$INCIDENT_TYPE_DESCRIPTION)
+
 # Create crime buckets
-violentCrime <- c("AGGRAVATED ASSAULT", "SIMPLE ASSAULT", "DEATH INVESTIGATION", "HOMICIDE",
-                  "Manslaug", "Simple Assault", "Aggravated Assault", "Homicide")
-sexCrimes <- c("CRIMES AGAINST CHILDREN", "SexReg", "PROSTITUTION CHARGES", "Sex Offender Registration",
-               "Prostitution", "Rape and Attempted")
-propertyCrimes <- c("RESIDENTIAL BURGLARY", "ROBBERY", "COMMERCIAL BURGLARY", "PropLost", "OTHER LARCENY",
-                    "AUTO THEFT", "VANDALISM", "LARCENY FROM MOTOR VEHICLE", "FIRE", "ARSON", "Vandalism",
-                    "Residential Burglary", "Property Related Damage", "Commercial Burglary", "Other Burglary")
+violentCrime <- c("AGGRAVATED ASSAULT", "SIMPLE ASSAULT", "DEATH INVESTIGATION", "HOMICIDE", "MANSLAUG")
+sexCrimes <- c("CRIMES AGAINST CHILDREN", "SEXREG", "PROSTITUTION CHARGES", "SEX OFFENDER REGISTRATION",
+               "PROSTITUTION", "RAPE AND ATTEMPTED")
+propertyCrimes <- c("RESIDENTIAL BURGLARY", "ROBBERY", "COMMERCIAL BURGLARY", "PROPLOST", "OTHER LARCENY",
+                    "AUTO THEFT", "VANDALISM", "LARCENY FROM MOTOR VEHICLE", "FIRE", "ARSON",
+                    "PROPERTY RELATED DAMAGE", "OTHER BURGLARY")
 
 # Subset the dataset on the buckets
 violence <- subset(crimeBoston, INCIDENT_TYPE_DESCRIPTION %in% violentCrime)
@@ -140,6 +143,20 @@ map3 <- ggmap(BostonBase, extent = "panel") +
         labs(title = "Property Crimes in Boston 2012-2015", x = "Longitude",  y = "Latitude")
 map3
 
+# Hourly plots of the crime variables
+crimeHours <- subset(crimeBoston, INCIDENT_TYPE_DESCRIPTION %in% violentCrime)
+crimeHours <- as.data.frame(table(crimeBoston))
+
+
+
+crimeHour <- ggplot(violenceHour, aes(x = Date, y = Total)) +
+             geom_line(position = "identity", aes(group = 1)) +
+             labs(title = "Violent Crime in Boston (JUL 2012 - JUL 2015)", 
+             x = "Hour", y = "Violent Crime by Hour") +
+             stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", aes(group = 1)) + 
+             scale_x_date(date_labels = "%I")
+# Need to fix x-axis scale. Change trendline color. Add "," on y-axis. 
+crimeHour          
 
 
 
