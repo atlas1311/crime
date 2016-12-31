@@ -9,10 +9,6 @@ lapply(dependent, library, character.only = TRUE)
 # D. Kahle and H. Wickham. ggmap: Spatial Visualization with ggplot2. The R Journal, 5(1),
 # 144-161. URL http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf
 
-# terror trends
-# immigrant trends
-# demographic shifts
-
 # Set your working directory
 setwd("~/crime")
 
@@ -30,7 +26,7 @@ crimeBoston$FROMDATE <- as.character(crimeBoston$FROMDATE)
 crimeBoston$DATE <- as.Date(crimeBoston$FROMDATE, format = "%m/%d/%Y %I:%M:%S %p")
 
 # Change time to 24-hour clock
-
+# crimeBoston$DATE <- as.Date(crimeBoston$FROMDATE, format = "%m/%d/%Y %H:%M:%S")
 
 # Add month, week, day, hour formats
 crimeBoston$MONTH <- as.Date(cut(crimeBoston$DATE, breaks = "month"))
@@ -109,6 +105,16 @@ propertyCrimeMonth <- ggplot(propertyMonth, aes(x = Date, y = Total)) +
   theme(plot.title = element_text(hjust = 0.5))
 propertyCrimeMonth
 
+# Hourly plots of the crime variables
+crimeHour <- ggplot(violenceHour, aes(x = Date, y = Total)) +
+  geom_line(position = "identity", aes(group = 1)) +
+  labs(title = "Violent Crime in Boston (JUL 2012 - JUL 2015)", 
+       x = "Hour", y = "Violent Crime by Hour") +
+  stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", aes(group = 1)) + 
+  scale_x_date(date_labels = "%I")
+# Need to fix x-axis scale. Change trendline color. Add "," on y-axis. 
+crimeHour    
+
 
 # Start making some heat maps
 # Create base map for Boston
@@ -116,7 +122,7 @@ BostonBase <- get_map(location = c(-71.075, 42.34), zoom = 12, maptype = "roadma
                   source = "google")
 BostonMap <- ggmap(BostonBase, fullpage = TRUE)
 
-# violent crime maps
+# violent crime maps 2012-2015
 map1 <- ggmap(BostonBase, extent = "panel", legend = "topleft") + 
         geom_density2d(data = violence, aes(x = Long, y = Lat), size = 0.3) +
         stat_density2d(data = violence, aes(x = Long, y = Lat, fill = ..level.., alpha = ..level..),
@@ -139,40 +145,207 @@ map2 <- ggmap(BostonBase, extent = "panel", legend = "topleft") +
         scale_alpha(range = c(0, 0.25), guide = FALSE) +
         labs(title = "Sex Crimes in Boston 2012-2015", x = "Longitude", y = "Latitude",
               fill = "Crime \nDensity") +
+        theme(plot.title = element_text(hjust = 0.5)) +
         geom_vline(xintercept = seq(-71.175, -70.00, by = .025), size = 0.25) +
         geom_hline(yintercept = seq(42.25, 42.40, by = .025), size = 0.25)
 map2
 
 # Property crime maps
 map3 <- ggmap(BostonBase, extent = "panel", legend = "topleft") +
-        geom_density2d(data = sex, aes(x = Long, y = Lat), size = 0.3) +
-        stat_density_2d(data = sex, aes(x = Long, y = Lat, fill = ..level.., alpha = ..level..),
+        geom_density2d(data = property, aes(x = Long, y = Lat), size = 0.3) +
+        stat_density_2d(data = property, aes(x = Long, y = Lat, fill = ..level.., alpha = ..level..),
               size = 0.01, n = 50, geom = "polygon") +
         scale_fill_gradient(low = "green", high = "red") +
         scale_alpha(range = c(0, 0.25), guide = FALSE) +
         labs(title = "Property Crimes in Boston 2012-2015", x = "Longitude",  y = "Latitude",
              fill = "Crime \nDensity") +
+        theme(plot.title = element_text(hjust = 0.5)) +
         geom_vline(xintercept = seq(-71.175, -70.00, by = .025), size = 0.25) +
         geom_hline(yintercept = seq(42.25, 42.40, by = .025), size = 0.25)
 map3
 
-# Hourly plots of the crime variables
-crimeHours <- subset(crimeBoston, INCIDENT_TYPE_DESCRIPTION %in% violentCrime)
-crimeHours <- as.data.frame(table(crimeBoston))
+# Violent Crime maps by year
+violence2012 <- violence[violence$Year == 2012, ]
+map1_2012 <- ggmap(BostonBase, extent = "panel", legend = "topleft") + 
+  geom_density2d(data = violence2012, aes(x = Long, y = Lat), size = 0.3) +
+  stat_density2d(data = violence2012, aes(x = Long, y = Lat, fill = ..level.., alpha = ..level..),
+                 size = 0.01, n = 50, geom = "polygon") +
+  scale_fill_gradient(low = "green", high = "red") +
+  scale_alpha(range = c(0, 0.25), guide = FALSE) +
+  labs(title = "Violent Crime in Boston: 2012", x = "Longitude", y = "Latitude",
+       fill = "Crime \nDensity") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_vline(xintercept = seq(-71.175, -70.00, by = .025), size = 0.25) +
+  geom_hline(yintercept = seq(42.25, 42.40, by = .025), size = 0.25)
+map1_2012
+dev.copy(png, "map1_2012.png")
+dev.off()
+
+violence2013 <- violence[violence$Year == 2013, ]
+map1_2013 <- ggmap(BostonBase, extent = "panel", legend = "topleft") + 
+  geom_density2d(data = violence2013, aes(x = Long, y = Lat), size = 0.3) +
+  stat_density2d(data = violence2013, aes(x = Long, y = Lat, fill = ..level.., alpha = ..level..),
+                 size = 0.01, n = 50, geom = "polygon") +
+  scale_fill_gradient(low = "green", high = "red") +
+  scale_alpha(range = c(0, 0.25), guide = FALSE) +
+  labs(title = "Violent Crime in Boston: 2013", x = "Longitude", y = "Latitude",
+       fill = "Crime \nDensity") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_vline(xintercept = seq(-71.175, -70.00, by = .025), size = 0.25) +
+  geom_hline(yintercept = seq(42.25, 42.40, by = .025), size = 0.25)
+map1_2013
+dev.copy(png, "map1_2013.png")
+dev.off()
+
+violence2014 <- violence[violence$Year == 2014, ]
+map1_2014 <- ggmap(BostonBase, extent = "panel", legend = "topleft") + 
+  geom_density2d(data = violence2014, aes(x = Long, y = Lat), size = 0.3) +
+  stat_density2d(data = violence2014, aes(x = Long, y = Lat, fill = ..level.., alpha = ..level..),
+                 size = 0.01, n = 50, geom = "polygon") +
+  scale_fill_gradient(low = "green", high = "red") +
+  scale_alpha(range = c(0, 0.25), guide = FALSE) +
+  labs(title = "Violent Crime in Boston: 2014", x = "Longitude", y = "Latitude",
+       fill = "Crime \nDensity") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_vline(xintercept = seq(-71.175, -70.00, by = .025), size = 0.25) +
+  geom_hline(yintercept = seq(42.25, 42.40, by = .025), size = 0.25)
+map1_2014
+dev.copy(png, "map1_2014.png")
+dev.off()
+
+violence2015 <- violence[violence$Year == 2015, ]
+map1_2015 <- ggmap(BostonBase, extent = "panel", legend = "topleft") + 
+  geom_density2d(data = violence2015, aes(x = Long, y = Lat), size = 0.3) +
+  stat_density2d(data = violence2015, aes(x = Long, y = Lat, fill = ..level.., alpha = ..level..),
+                 size = 0.01, n = 50, geom = "polygon") +
+  scale_fill_gradient(low = "green", high = "red") +
+  scale_alpha(range = c(0, 0.25), guide = FALSE) +
+  labs(title = "Violent Crime in Boston: 2015", x = "Longitude", y = "Latitude",
+       fill = "Crime \nDensity") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_vline(xintercept = seq(-71.175, -70.00, by = .025), size = 0.25) +
+  geom_hline(yintercept = seq(42.25, 42.40, by = .025), size = 0.25)
+map1_2015
+dev.copy(png, "map1_2015.png")
+dev.copy()
 
 
 
-crimeHour <- ggplot(violenceHour, aes(x = Date, y = Total)) +
-             geom_line(position = "identity", aes(group = 1)) +
-             labs(title = "Violent Crime in Boston (JUL 2012 - JUL 2015)", 
-             x = "Hour", y = "Violent Crime by Hour") +
-             stat_smooth(method = "lm", se = TRUE, fill = "black", colour = "black", aes(group = 1)) + 
-             scale_x_date(date_labels = "%I")
-# Need to fix x-axis scale. Change trendline color. Add "," on y-axis. 
-crimeHour          
+# Sex crime maps by year
+sex2012 <- sex[sex$Year == 2012, ]
+map2_2012 <- ggmap(BostonBase, extent = "panel", legend = "topleft") +
+  geom_density2d(data = sex2012, aes(x = Long, y = Lat), size = 0.3) +
+  stat_density_2d(data = sex2012, aes(x = Long, y = Lat, fill = ..level.., alpha = ..level..),
+                  size = 0.01, n = 50, geom = "polygon") +
+  scale_fill_gradient(low = "green", high = "red") +
+  scale_alpha(range = c(0, 0.25), guide = FALSE) +
+  labs(title = "Sex Crimes in Boston: 2012", x = "Longitude", y = "Latitude",
+       fill = "Crime \nDensity") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_vline(xintercept = seq(-71.175, -70.00, by = .025), size = 0.25) +
+  geom_hline(yintercept = seq(42.25, 42.40, by = .025), size = 0.25)
+map2_2012
 
+sex2013 <- sex[sex$Year == 2013, ]
+map2_2013 <- ggmap(BostonBase, extent = "panel", legend = "topleft") +
+  geom_density2d(data = sex2013, aes(x = Long, y = Lat), size = 0.3) +
+  stat_density_2d(data = sex2013, aes(x = Long, y = Lat, fill = ..level.., alpha = ..level..),
+                  size = 0.01, n = 50, geom = "polygon") +
+  scale_fill_gradient(low = "green", high = "red") +
+  scale_alpha(range = c(0, 0.25), guide = FALSE) +
+  labs(title = "Sex Crimes in Boston: 2013", x = "Longitude", y = "Latitude",
+       fill = "Crime \nDensity") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_vline(xintercept = seq(-71.175, -70.00, by = .025), size = 0.25) +
+  geom_hline(yintercept = seq(42.25, 42.40, by = .025), size = 0.25)
+map2_2013
 
+sex2014 <- sex[sex$Year == 2014, ]
+map2_2014 <- ggmap(BostonBase, extent = "panel", legend = "topleft") +
+  geom_density2d(data = sex2014, aes(x = Long, y = Lat), size = 0.3) +
+  stat_density_2d(data = sex2014, aes(x = Long, y = Lat, fill = ..level.., alpha = ..level..),
+                  size = 0.01, n = 50, geom = "polygon") +
+  scale_fill_gradient(low = "green", high = "red") +
+  scale_alpha(range = c(0, 0.25), guide = FALSE) +
+  labs(title = "Sex Crimes in Boston: 2014", x = "Longitude", y = "Latitude",
+       fill = "Crime \nDensity") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_vline(xintercept = seq(-71.175, -70.00, by = .025), size = 0.25) +
+  geom_hline(yintercept = seq(42.25, 42.40, by = .025), size = 0.25)
+map2_2014
 
+sex2015 <- sex[sex$Year == 2015, ]
+map2_2015 <- ggmap(BostonBase, extent = "panel", legend = "topleft") +
+  geom_density2d(data = sex2015, aes(x = Long, y = Lat), size = 0.3) +
+  stat_density_2d(data = sex2015, aes(x = Long, y = Lat, fill = ..level.., alpha = ..level..),
+                  size = 0.01, n = 50, geom = "polygon") +
+  scale_fill_gradient(low = "green", high = "red") +
+  scale_alpha(range = c(0, 0.25), guide = FALSE) +
+  labs(title = "Sex Crimes in Boston: 2015", x = "Longitude", y = "Latitude",
+       fill = "Crime \nDensity") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_vline(xintercept = seq(-71.175, -70.00, by = .025), size = 0.25) +
+  geom_hline(yintercept = seq(42.25, 42.40, by = .025), size = 0.25)
+map2_2015
+
+# Property Crimes by year
+property2012 <- property[property$Year == 2012, ]
+map3_2012 <- ggmap(BostonBase, extent = "panel", legend = "topleft") +
+  geom_density2d(data = property2012, aes(x = Long, y = Lat), size = 0.3) +
+  stat_density_2d(data = property2012, aes(x = Long, y = Lat, fill = ..level.., alpha = ..level..),
+                  size = 0.01, n = 50, geom = "polygon") +
+  scale_fill_gradient(low = "green", high = "red") +
+  scale_alpha(range = c(0, 0.25), guide = FALSE) +
+  labs(title = "Property Crimes in Boston: 2012", x = "Longitude",  y = "Latitude",
+       fill = "Crime \nDensity") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_vline(xintercept = seq(-71.175, -70.00, by = .025), size = 0.25) +
+  geom_hline(yintercept = seq(42.25, 42.40, by = .025), size = 0.25)
+map3_2012
+
+property2013 <- property[property$Year == 2013, ]
+map3_2013 <- ggmap(BostonBase, extent = "panel", legend = "topleft") +
+  geom_density2d(data = property2013, aes(x = Long, y = Lat), size = 0.3) +
+  stat_density_2d(data = property2013, aes(x = Long, y = Lat, fill = ..level.., alpha = ..level..),
+                  size = 0.01, n = 50, geom = "polygon") +
+  scale_fill_gradient(low = "green", high = "red") +
+  scale_alpha(range = c(0, 0.25), guide = FALSE) +
+  labs(title = "Property Crimes in Boston: 2013", x = "Longitude",  y = "Latitude",
+       fill = "Crime \nDensity") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_vline(xintercept = seq(-71.175, -70.00, by = .025), size = 0.25) +
+  geom_hline(yintercept = seq(42.25, 42.40, by = .025), size = 0.25)
+map3_2013
+
+property2014 <- property[property$Year == 2014, ]
+map3_2014 <- ggmap(BostonBase, extent = "panel", legend = "topleft") +
+  geom_density2d(data = property2014, aes(x = Long, y = Lat), size = 0.3) +
+  stat_density_2d(data = property2014, aes(x = Long, y = Lat, fill = ..level.., alpha = ..level..),
+                  size = 0.01, n = 50, geom = "polygon") +
+  scale_fill_gradient(low = "green", high = "red") +
+  scale_alpha(range = c(0, 0.25), guide = FALSE) +
+  labs(title = "Property Crimes in Boston: 2014", x = "Longitude",  y = "Latitude",
+       fill = "Crime \nDensity") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_vline(xintercept = seq(-71.175, -70.00, by = .025), size = 0.25) +
+  geom_hline(yintercept = seq(42.25, 42.40, by = .025), size = 0.25)
+map3_2014
+
+property2015 <- property[property$Year == 2015, ]
+map3_2015 <- ggmap(BostonBase, extent = "panel", legend = "topleft") +
+  geom_density2d(data = property2015, aes(x = Long, y = Lat), size = 0.3) +
+  stat_density_2d(data = property2015, aes(x = Long, y = Lat, fill = ..level.., alpha = ..level..),
+                  size = 0.01, n = 50, geom = "polygon") +
+  scale_fill_gradient(low = "green", high = "red") +
+  scale_alpha(range = c(0, 0.25), guide = FALSE) +
+  labs(title = "Property Crimes in Boston: 2015", x = "Longitude",  y = "Latitude",
+       fill = "Crime \nDensity") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_vline(xintercept = seq(-71.175, -70.00, by = .025), size = 0.25) +
+  geom_hline(yintercept = seq(42.25, 42.40, by = .025), size = 0.25)
+map3_2015
+
+# Make .gif files
 
 
 
