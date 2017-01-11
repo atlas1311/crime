@@ -215,11 +215,9 @@ map3 <- ggmap(LAbase, extent = "panel") +
         labs(title = "Total LA Violent Crime Arrests", x = "Longitude", y = "Latitude")
 map3
 
-# Need to think about making a GIF with the change in crime density across years, or even months
-
-
-
-
+# Make .png files of all the maps year-to-year
+# Convert .png files to .gif in the command line
+# convert -delay 200 -loop 0 *.png ViolentCrime.gif
 
 
 
@@ -287,8 +285,6 @@ crimeMonth
 plot(for1h)
 abline(h = 0)
 grid()
-
-
 
 
 

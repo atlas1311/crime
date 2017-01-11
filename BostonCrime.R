@@ -363,6 +363,18 @@ dev.off()
 # Convert .png files to .gif in the command line
 # convert -delay 200 -loop 0 *.png ViolentCrime.gif
 
+# Let's build some ARIMA models
+crimeBoston2 <- as.data.frame(table(violence$MONTH))
+colnames(crimeBoston2) <- c("Date", "Total")
+
+Total <- crimeBoston2[, "Total"]
+
+model1a <- arima(Total, order=c(1,0,0)) # AR(1) 
+summary(model1a)
+accuracy(model1a)
+
+
+
 
 
 
